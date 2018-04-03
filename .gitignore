@@ -99,3 +99,7 @@ ENV/
 
 # mypy
 .mypy_cache/
+
+data/
+audfprint/tests/
+processing_tmp/
