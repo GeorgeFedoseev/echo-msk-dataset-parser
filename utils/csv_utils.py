@@ -139,7 +139,7 @@ def maybe_start_csv_queue_worker_thread():
     global CSV_UPDATE_WORKER_THREAD
 
     if CSV_UPDATE_WORKER_THREAD == None:
-        print 'start_csv_queue_worker_thread'
+        print '[csv_utils] start_csv_queue_worker_thread'
         CSV_UPDATE_WORKER_THREAD = threading.Thread(target=csv_queue_worker)
         CSV_UPDATE_WORKER_THREAD.daemon = False
         CSV_UPDATE_WORKER_THREAD.start()
@@ -181,12 +181,13 @@ def get_row_in_csv(csv_path, row_first_cell_val):
     data = read_all(csv_path)
 
     for row in data:
-        if len(row) > 0 and row[0] == row_first_cell_val:
+        #print 'check %s %s' % (row[0], row_first_cell_val)
+        if len(row) > 0 and row[0].strip() == row_first_cell_val.strip():
             return row
     return None
 
 def is_item_in_csv(csv_path, item):
-    get_row_in_csv(csv_path, item) != None
+    return get_row_in_csv(csv_path, item) != None
 
 # modify operations
 def clear_csv(csv_path):

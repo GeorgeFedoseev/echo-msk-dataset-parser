@@ -10,7 +10,7 @@ import datetime
 BASE_URL = "https://echo.msk.ru"
 PROGRAM_URL = "/programs/personalno"
 
-URLS_CSV = "personalno_%s.csv" % str(datetime.datetime.now())
+URLS_CSV = "personalno.csv"
 
 
 def get_number_of_pages():
@@ -30,9 +30,11 @@ def construct_archive_page_url(num):
 def find_all_urls():
     all_urls = []
 
-    csv_utils.write_column_to_csv(URLS_CSV, [])
+    #csv_utils.write_column_to_csv(URLS_CSV, [])
 
     n = get_number_of_pages()
+
+    is_any_url_on_page_already_in_csv = False
 
     if n == -1:
         return all_urls
@@ -45,13 +47,25 @@ def find_all_urls():
 
         urls = []
         for a in a_nodes:
-            urls.append(BASE_URL + a["href"])
+            url = BASE_URL + a["href"]
+            
+            if csv_utils.is_item_in_csv(URLS_CSV, url):
+                is_any_url_on_page_already_in_csv = True
+            else:
+                print url
+                urls.append(url)            
 
-        print("parsed page %i of archive, found %i items" % (i, len(urls)))
+        print("parsed page %i of archive, found %i new items" % (i, len(urls)))
         all_urls += urls
 
         # append to csv
         csv_utils.append_column_to_csv(URLS_CSV, urls)
+
+        if is_any_url_on_page_already_in_csv:
+            # old pages started
+            break
+
+    print("total added %i urls" % len(all_urls))
 
     return all_urls
 
