@@ -58,6 +58,10 @@ def extract_text(soup):
 
     content_el = get_content_soup(soup)
 
+    text_lines = []
+
+    cut_points = 0
+
     for p in content_el.find_all('p'):
         txt = p.text.strip()
 
@@ -69,16 +73,31 @@ def extract_text(soup):
             speaker_name = p.find('b').text.strip()
             txt = txt.replace(speaker_name, '')
 
-        print txt
+        # checks
+        if 'РЕКЛАМА' in txt:
+            cut_points += 1
 
+            if txt != 'РЕКЛАМА':
+                raise Exception("'РЕКЛАМА' in txt and txt != 'РЕКЛАМА'")
+
+        if 'НОВОСТИ' in txt:
+            cut_points += 1
+
+            if txt != 'НОВОСТИ':
+                raise Exception("'НОВОСТИ' in txt and txt != 'НОВОСТИ'")
+
+        #print txt
+
+        text_lines.append(txt)
+
+    return text_lines, cut_points
 
             
     
 
 
-def extract_audio_url(soup, directory):
-    href = soup.find("a", "load iblock", href=re.compile("^https://cdn.echo.msk.ru/snd/"))["href"]
-    print("found audio url: %s" % href)
+def extract_audio_url(soup):
+    href = soup.find("a", "load iblock", href=re.compile("^https://cdn.echo.msk.ru/snd/"))["href"]    
     return href
 
 def parse_page(url):
@@ -87,16 +106,25 @@ def parse_page(url):
     r = requests.get(url)
     soup = bs(r.text, 'html.parser')
 
-    text = extract_text(soup)
+    res = extract_text(soup)
+    if res:
+        text_lines, cut_points = res
 
-    if text:
-        pass
+        print('text_lines: %i' % len(text_lines))
+        print('cut_points: %i' % cut_points)
+        audio_url = extract_audio_url(soup)
+        print('audio_url: %s' % audio_url)
+
+        return audio_url, text_lines, cut_points
+
+    return None
+    
     
         
 
 
 if __name__ == "__main__":
-    parse_page("https://echo.msk.ru/programs/personalno/2163304-echo/")
+    parse_page("https://echo.msk.ru/programs/personalno/1452184-echo/")
 
 
 
