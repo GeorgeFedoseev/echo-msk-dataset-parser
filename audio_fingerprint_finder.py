@@ -88,8 +88,8 @@ def maybe_create_ad_db():
         + audfprint_script_path
         + " new"
         + " --dbase "+ads_db_path
-        + " --density 100"
-        + " --shifts 4"
+        + " --density 150"
+        + " --shifts 1"
         + " --samplerate 11025"
         + " --list "+txt_paths_file_path,
         
@@ -122,7 +122,7 @@ def precompute(input_path):
         + audfprint_script_path
         + " precompute"
         + " --precompdir "+TMP_DIR_PATH
-        + " --density 100"
+        + " --density 150"
         + " --shifts 1"
         + " --samplerate 11025"
         + " --ncores 1"        
@@ -146,7 +146,7 @@ def get_audio_length(input_file):
 
 def find_ads(input_path, input_audio_path, before_seconds=-1):
     maybe_create_ad_db()
-    
+
     print 'Finding ads in %s...' % input_path
 
     print 'using db %s' % ads_db_path

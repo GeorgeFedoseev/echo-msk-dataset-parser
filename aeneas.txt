@@ -1,0 +1,6 @@
+!#/bin/bash
+for ((i=1;i<340;i++))
+do
+python -m aeneas.tools.execute_task ./data/$i/audio_without_ad.mp3 ./data/$i/in_dots.txt "task_language=rus|os_task_file_format=txt|is_text_type=plain" ./data/$i/map_dots.txt
+python -m aeneas.tools.execute_task ./data/$i/audio_without_ad.mp3 ./data/$i/in_coef.txt "task_language=rus|os_task_file_format=txt|is_text_type=plain" ./data/$i/map_coef.txt
+done
