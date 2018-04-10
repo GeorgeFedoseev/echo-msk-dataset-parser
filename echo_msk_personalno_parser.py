@@ -147,7 +147,7 @@ def cut_according_to_map(wave_obj, map_path, output_dir_path, show_id):
     if not os.path.exists(output_dir_path):
         os.makedirs(output_dir_path)
 
-    m = pandas.read_table(map_path, sep=' ', quotechar='"').as_matrix()
+    m = pandas.read_table(map_path, sep=' ', quotechar='"', header=None).as_matrix()
 
     def cutter_thread_method(d):
         i, row = d        
@@ -176,9 +176,13 @@ def cut_according_to_map(wave_obj, map_path, output_dir_path, show_id):
         
         audio_piece_path = os.path.join(output_dir_path, show_id +"-"+ str(part_id) + ".wav")        
             
+
+        
         if not os.path.exists(audio_piece_path):
             # try correct
+
             corr = audio.try_correct_cut(wave_obj, start, end)
+            
             if corr:
                 start, end = corr
                 print "CORRECTED %s" % audio_piece_path            
@@ -188,7 +192,9 @@ def cut_according_to_map(wave_obj, map_path, output_dir_path, show_id):
             if end-start < MIN_LENGTH:
                 return None
 
+            
             audio.cut_wave(wave_obj, audio_piece_path, int(start*1000), int(end*1000))
+            
 
         if is_bad_piece(audio_piece_path, transcript):
             if os.path.exists(audio_piece_path):
@@ -199,7 +205,10 @@ def cut_according_to_map(wave_obj, map_path, output_dir_path, show_id):
 
         file_size = os.path.getsize(audio_piece_path)
 
-        row = [audio_piece_path, str(file_size), transcript]
+        speech_duration_sec = end-start
+
+        row = [audio_piece_path, str(file_size), transcript, str(speech_duration_sec)]
+
 
         return row
 
@@ -213,6 +222,13 @@ def cut_according_to_map(wave_obj, map_path, output_dir_path, show_id):
 
     return pieces_rows
 
+def write_stats(data_folder, stats_header, stats):
+    stats_path = os.path.join(video_folder, "stats.csv")
+    f = open(stats_path, "w")
+    csv_writer = csv.writer(f)
+    csv_writer.writerow(stats_header)
+    csv_writer.writerow(stats)
+    f.close()
 
 def parse_item(url):
     res = parse_page(url)
@@ -252,6 +268,8 @@ def parse_item(url):
     text_lines_coeff = sample_text_coef(text_lines, min_len=8)
     text_lines_punct = sample_text_dots(text_lines)
 
+    map_text_lines = text_lines_punct
+
     # for l in text_lines_punct:
     #     print l
 
@@ -259,7 +277,7 @@ def parse_item(url):
     # map text to speech
     map_path = os.path.join(item_data_folder_path, item_name+("-fa_map.txt"))
     if not os.path.exists(map_path):
-        create_force_align_map(audio_path_no_ads_wav, text_lines_punct, map_path)
+        create_force_align_map(audio_path_no_ads_wav, map_text_lines, map_path)
 
     print("Map created: %s" % map_path)
 
@@ -272,17 +290,23 @@ def parse_item(url):
     # CUT
 
 
-
     # load wave
     wave_obj = wave.open(audio_path_no_ads_wav, 'r')
 
     pieces_dir_path = os.path.join(item_data_folder_path, "pieces/")
-    piecese_rows = cut_according_to_map(wave_obj, map_path, pieces_dir_path, show_id=item_name)
+    pieces_rows = cut_according_to_map(wave_obj, map_path, pieces_dir_path, show_id=item_name)
 
     csv_path = os.path.join(item_data_folder_path, "pieces.csv")
-    csv_utils.write_rows_to_csv(csv_path, piecese_rows)
+    csv_utils.write_rows_to_csv(csv_path, pieces_rows)
 
-  
+    total_speech_duration = 0
+    for r in pieces_rows:
+        total_speech_duration += float(r[3])
+
+    # write stats
+    # stats
+    write_stats(item_data_folder_path, ["speech_duration", "good_samples", "total_samples"], [
+                total_speech_duration, len(pieces_rows), len(map_text_lines)])
     
     print('done')
     

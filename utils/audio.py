@@ -95,14 +95,14 @@ def cut_wave(wave_obj, outfilename, start_ms, end_ms):
     fpms = rate / 1000 # frames per ms
     length = (end_ms - start_ms) * fpms
     start_index = start_ms * fpms
-
+    #print 'CUT WAVE'
     #print 'cut_wave: %i - %i' % (start_ms, end_ms)
 
     out = wave.open(outfilename, "w")
     out.setparams((wave_obj.getnchannels(), width, rate, length, wave_obj.getcomptype(), wave_obj.getcompname()))
     
     wave_obj.rewind()
-    anchor = wave_obj.tell()
+    anchor = wave_obj.tell()    
     wave_obj.setpos(anchor + start_index)
     out.writeframes(wave_obj.readframes(length))
 
@@ -150,18 +150,26 @@ CHECK_FRAMES_NUM = 3
 def get_speech_int_array(wave, start, end):
     vad = webrtcvad.Vad(2)
 
+    start = max(0, start)
+
     samples_per_second = wave.getframerate()
 
     #print "Framerate: %i" % samples_per_second
 
     samples_per_frame = int(SPEECH_FRAME_SEC*samples_per_second)
+
+    total_samples = wave.getnframes()
+
     
     #print "Samples per frame: %i" % samples_per_frame
-
-    wave.setpos(start*samples_per_second)
+    wave.rewind()
+    try:
+        wave.setpos(start*samples_per_second)
+    except:
+        print "faield to set pos %f" % start
 
     wave_view_int = []
-    while wave.tell() < end*samples_per_second:
+    while wave.tell() < min(end*samples_per_second, total_samples):
         #wave_view_str += "1" if vad.is_speech(wave.readframes(samples_to_get), sample_rate) else "0"
         try:
             wave_view_int.append(1 if vad.is_speech(wave.readframes(samples_per_frame), samples_per_second) else 0)       
