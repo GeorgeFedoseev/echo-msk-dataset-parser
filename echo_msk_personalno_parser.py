@@ -179,27 +179,29 @@ def cut_according_to_map(wave_obj, map_path, output_dir_path, show_id):
 
         
         if not os.path.exists(audio_piece_path):
-            # try correct
-
-            corr = audio.try_correct_cut(wave_obj, start, end)
             
-            if corr:
-                start, end = corr
-                print "CORRECTED %s" % audio_piece_path            
 
             # HEURISTIC for this type of show: small fragmets usually contain speech overlapped or wrong words
             MIN_LENGTH = 2
             if end-start < MIN_LENGTH:
                 return None
 
+            # try correct
+
+            corr = audio.try_correct_cut(wave_obj, start, end)
+
+            if corr:
+                start, end = corr
+                print "CORRECTED %s" % audio_piece_path       
+
             
             audio.cut_wave(wave_obj, audio_piece_path, int(start*1000), int(end*1000))
             
 
-        if is_bad_piece(audio_piece_path, transcript):
-            if os.path.exists(audio_piece_path):
-                os.remove(audio_piece_path)
-            return None
+            if is_bad_piece(audio_piece_path, transcript):
+                #if os.path.exists(audio_piece_path):
+                #    os.remove(audio_piece_path)
+                return None
 
 
 
@@ -223,7 +225,7 @@ def cut_according_to_map(wave_obj, map_path, output_dir_path, show_id):
     return pieces_rows
 
 def write_stats(data_folder, stats_header, stats):
-    stats_path = os.path.join(video_folder, "stats.csv")
+    stats_path = os.path.join(data_folder, "stats.csv")
     f = open(stats_path, "w")
     csv_writer = csv.writer(f)
     csv_writer.writerow(stats_header)
