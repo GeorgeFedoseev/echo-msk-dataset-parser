@@ -10,32 +10,9 @@ import webrtcvad
 
 import datetime
 
-WAV_FILE = 'data/test.wav'
 
 
 
-
-
-BITRATE = 16
-BYTE_WIDTH = BITRATE/8
-
-SPEECH_DETECT_SEC = 0.01
-
-def get_speech_int_array(wav_file_path):
-    vad = webrtcvad.Vad(3)
-    wave_obj = wave.open(WAV_FILE)
-    rate = wave_obj.getframerate()
-    totlal_samples = wave_obj.getnframes()
-    _window_size = int(rate * SPEECH_DETECT_SEC)    
-
-    wave_view_int = []
-    while wave_obj.tell() < totlal_samples:
-        try:
-            wave_view_int.append(1 if vad.is_speech(wave_obj.readframes(_window_size), rate) else 0)
-        except:
-            print("error processing")
-       
-    return wave_view_int
 
 def movingaverage(lst, N):    
     moving_aves = []
@@ -52,7 +29,7 @@ def movingaverage(lst, N):
 def get_speech_intermittent_arr(wav_file):
 
     speech_intermittent = []
-    rate, data = wav.read(WAV_FILE)
+    rate, data = wav.read(wav_file)
     length_sec = float(len(data))/rate
     total_average = np.average(np.abs(data))
 
@@ -66,7 +43,7 @@ def get_speech_intermittent_arr(wav_file):
 
     vals = []   
 
-    print "total_average: %f" % total_average
+    #print "total_average: %f" % total_average
 
     for i in range(0, chunks_num):
         start = int(i*window_samples)
@@ -80,35 +57,9 @@ def get_speech_intermittent_arr(wav_file):
         end = int(i*vals_per_sec+vals_per_sec)
         speech_intermittent.append(0 if any([x == 0 for x in vals[start:end]]) else 1)
 
-
-
     return speech_intermittent
 
 
-
-def get_speech_density_arr(wav_file):
-
-    speech_detected_arr = get_speech_int_array(wav_file)
-
-    print("speech_detected_arr len: %i" % len(speech_detected_arr))
-
-    length_sec = int(len(speech_detected_arr)*SPEECH_DETECT_SEC)
-
-    DENSITY_WINDOW_SEC = 5
-    bin_size = int(float(DENSITY_WINDOW_SEC)/SPEECH_DETECT_SEC)
-    speech_density = []
-
-    bins_num = int(len(speech_detected_arr)/bin_size)
-
-    for s in range(0, length_sec):
-        center = int(float(s)/SPEECH_DETECT_SEC)
-        width = int(DENSITY_WINDOW_SEC/SPEECH_DETECT_SEC)
-        start = max(0, center-width/2)
-        end = min(center+width/2, len(speech_detected_arr))
-
-        speech_density.append(np.average(speech_detected_arr[start:end]))
-
-    return speech_density
 
 def get_speech_energy_arr(wav_file):
     speech_energy = []
@@ -130,7 +81,7 @@ def get_speech_energy_arr(wav_file):
 
     return speech_energy
 
-def get_intervals(wav_file):
+def get_commertial_intervals(wav_file):
     intervals = []
 
     speech_intermittent = get_speech_intermittent_arr(wav_file)
@@ -196,61 +147,28 @@ def intervals_to_bool_arr(intervals):
 
     return arr
 
-ENERGY_THRESH = 1.1
-ENERGY_SMOOTH = 30
-def get_commercial_intervals(wav_file):
-    speech_energy = get_speech_energy_arr(wav_file)
-    speech_energy_ma = movingaverage(speech_energy, N=ENERGY_SMOOTH)
 
-    intervals = []
+if __name__ == "__main__":   
 
-    
+    WAV_FILE = 'data/test2.wav'
 
-    t_start = None
-    for t, x in enumerate(speech_energy_ma):
+    speech_energy = get_speech_energy_arr(WAV_FILE)
+    speech_energy_ma = movingaverage(speech_energy, N=30)
+    plt.plot(speech_energy_ma)
 
-        if x > ENERGY_THRESH:
-            if t_start == None:
-                t_start = t
-        else:
-            if t_start != None:
-                if t - t_start > 5: # longer than 5 sec
-                    intervals.append((t_start, t))
-                t_start = None
-    return intervals
+    # speech_intermittent = get_speech_intermittent_arr(WAV_FILE)
+    # speech_intermittent_ma = movingaverage(speech_intermittent, N=5)
+    #plt.plot(speech_intermittent_ma, linestyle='-', marker='', markersize=0.5)
 
 
-
-# speech_density = get_speech_density_arr(WAV_FILE)
-# speech_density_ma = movingaverage(speech_density, N=100)
-# plt.plot(speech_density_ma)
+    intervals = get_commertial_intervals(WAV_FILE)
+    plt.plot(intervals_to_bool_arr(intervals))
 
 
-speech_energy = get_speech_energy_arr(WAV_FILE)
-speech_energy_ma = movingaverage(speech_energy, N=ENERGY_SMOOTH)
-plt.plot(speech_energy_ma)
-#plt.plot([1 if x > ENERGY_THRESH else 0 for x in speech_energy_ma])
-
-speech_intermittent = get_speech_intermittent_arr(WAV_FILE)
-speech_intermittent_ma = movingaverage(speech_intermittent, N=5)
-#plt.plot(speech_intermittent_ma, linestyle='-', marker='', markersize=0.5)
+    for interval in intervals:
+        print "%s - %s: %s" % ( str(datetime.timedelta(seconds=interval[0])), str(datetime.timedelta(seconds=interval[1])), str(interval[2]) )
 
 
-intervals = get_intervals(WAV_FILE)
-
-plt.plot(intervals_to_bool_arr(intervals))
-
-
-for interval in intervals:
-    print "%s - %s: %i" % ( str(datetime.timedelta(seconds=interval[0])), str(datetime.timedelta(seconds=interval[1])), interval[2] )
-
-
-
-
-# ads_intervals = get_commercial_intervals(WAV_FILE)
-# for ad in ads_intervals:
-#     print "%s - %s" % ( str(datetime.timedelta(seconds=ad[0])), str(datetime.timedelta(seconds=ad[1])) )
-
-plt.show()
+    plt.show()
 
 

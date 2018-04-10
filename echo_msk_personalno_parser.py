@@ -7,7 +7,7 @@ import re
 import subprocess
 
 from echo_msk_personalno_webpage_parser import parse_page 
-import audio_fingerprint_finder
+
 
 from utils import audio
 
@@ -203,11 +203,17 @@ def parse_item(url):
     if not os.path.exists(audio_path):
         download_audio(audio_url, audio_path)    
 
+
+    # PREPROCESS AUDIO
     # convert audio
     audio_path_wav = os.path.join(item_data_folder_path, item_name+"-audio.wav")
     if not os.path.exists(audio_path_wav):
         audio.convert_to_wav(audio_path, audio_path_wav)        
 
+    # CUT COMMERTIALS
+
+
+    # FORCE ALIGNMENT
     
     text_lines_coeff = sample_text_coef(text_lines, min_len=8)
     text_lines_punct = sample_text_dots(text_lines)

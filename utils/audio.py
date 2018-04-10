@@ -4,6 +4,13 @@ import wave
 import webrtcvad
 import numpy as np
 
+def get_audio_length(input_file):    
+    result = subprocess.Popen('ffprobe -i '+input_file+' -show_entries format=duration -v quiet -of csv="p=0"', stdout=subprocess.PIPE,stderr=subprocess.STDOUT, shell=True)
+    output = result.communicate()
+
+    return float(output[0])
+
+
 def apply_bandpass_filter(in_path, out_path):
     # ffmpeg -i input.wav -acodec pcm_s16le -ac 1 -ar 16000 -af lowpass=3000,highpass=200 output.wav
     p = subprocess.Popen(["ffmpeg", "-y",
@@ -56,6 +63,29 @@ def convert_to_wav(in_audio_path, out_audio_path):
 
     if p.returncode != 0:
         print("failed_ffmpeg_conversion "+str(err))
+        return False
+    return True
+
+def concatinate_files(ffmpeg_list_file_path, output_path):
+    print 'Concatinate files...'
+
+    # ffmpeg -i "concat:input1.mpg|input2.mpg|input3.mpg" -c copy output.mpg
+    # ffmpeg -f concat -safe 0 -i mylist.txt -c copy output
+
+    p = subprocess.Popen(["ffmpeg", "-y",
+         "-f", "concat",
+         "-safe", "0",
+         "-i", ffmpeg_list_file_path,
+         "-c", "copy",         
+         output_path
+         ], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+    out, err = p.communicate()
+
+    print out
+
+    if p.returncode != 0:
+        print("failed_ffmpeg_concat "+str(err))
         return False
     return True
 
