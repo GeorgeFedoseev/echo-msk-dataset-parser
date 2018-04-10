@@ -81,10 +81,13 @@ def sync_csv_to_file(csv_path):
 
     lines = []
     for row in CSV_FILES_DICT[csv_path]["rows"]:
-        lines.append(','.join(row))
+        rows_str = [str(x) for x in row]
+        lines.append(','.join(rows_str))
 
     #print lines
 
+
+    print 'write to %s' % csv_path
     f = open(csv_path, "w")
     f.write('\n'.join(lines)+'\n')
     f.close()
@@ -119,13 +122,14 @@ def csv_queue_worker():
                 if performed_count > 0:
                     sync_csv_to_file(csv_path)
 
-                # finished queue
-                # check if main thread is still alive
-                is_main_thread_active = lambda : any((i.name == "MainThread") and i.is_alive() for i in threading.enumerate())
-                #print("is_main_thread_active: %s" % str(is_main_thread_active()))
-                if not is_main_thread_active():
-                    #print ("main thread is not alive - exit")
-                    sys.exit()
+            # finished queue
+            # check if main thread is still alive
+            is_main_thread_active = lambda : any((i.name == "MainThread") and i.is_alive() for i in threading.enumerate())
+            #print("is_main_thread_active: %s" % str(is_main_thread_active()))
+                
+            if not is_main_thread_active():
+                print ("main thread is not alive - exit")
+                sys.exit()
 
 
         #print ("performed %i queue operations" % performed_count)

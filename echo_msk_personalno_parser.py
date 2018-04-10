@@ -209,7 +209,7 @@ def cut_according_to_map(wave_obj, map_path, output_dir_path, show_id):
 
         speech_duration_sec = end-start
 
-        row = [audio_piece_path, str(file_size), transcript, str(speech_duration_sec)]
+        row = [audio_piece_path, str(file_size), transcript, speech_duration_sec]
 
 
         return row
@@ -226,11 +226,12 @@ def cut_according_to_map(wave_obj, map_path, output_dir_path, show_id):
 
 def write_stats(data_folder, stats_header, stats):
     stats_path = os.path.join(data_folder, "stats.csv")
-    f = open(stats_path, "w")
-    csv_writer = csv.writer(f)
-    csv_writer.writerow(stats_header)
-    csv_writer.writerow(stats)
-    f.close()
+
+    print stats
+    csv_utils.write_rows_to_csv(stats_path, [stats_header, stats])
+    #csv_writer.writerow(stats_header)
+    #csv_writer.writerow(stats)
+    
 
 def parse_item(url):
     res = parse_page(url)
@@ -295,15 +296,15 @@ def parse_item(url):
     # load wave
     wave_obj = wave.open(audio_path_no_ads_wav, 'r')
 
-    pieces_dir_path = os.path.join(item_data_folder_path, "pieces/")
+    pieces_dir_path = os.path.join(item_data_folder_path, "parts/")
     pieces_rows = cut_according_to_map(wave_obj, map_path, pieces_dir_path, show_id=item_name)
 
-    csv_path = os.path.join(item_data_folder_path, "pieces.csv")
+    csv_path = os.path.join(item_data_folder_path, "parts.csv")
     csv_utils.write_rows_to_csv(csv_path, pieces_rows)
 
     total_speech_duration = 0
     for r in pieces_rows:
-        total_speech_duration += float(r[3])
+        total_speech_duration += r[3]
 
     # write stats
     # stats
