@@ -82,7 +82,7 @@ def concatinate_files(ffmpeg_list_file_path, output_path):
 
     out, err = p.communicate()
 
-    print out
+    #print out
 
     if p.returncode != 0:
         print("failed_ffmpeg_concat "+str(err))
@@ -95,6 +95,8 @@ def cut_wave(wave_obj, outfilename, start_ms, end_ms):
     fpms = rate / 1000 # frames per ms
     length = (end_ms - start_ms) * fpms
     start_index = start_ms * fpms
+
+    #print 'cut_wave: %i - %i' % (start_ms, end_ms)
 
     out = wave.open(outfilename, "w")
     out.setparams((wave_obj.getnchannels(), width, rate, length, wave_obj.getcomptype(), wave_obj.getcompname()))
@@ -187,12 +189,12 @@ def ends_with_speech(wave, start, end):
 def starts_or_ends_during_speech(wave, start, end):
     speech_array = get_speech_int_array(wave, start, end)
     #print_speech_int_array(speech_array)
-    print(len(speech_array))
+    #print(len(speech_array))
     return np.sum(speech_array[-CHECK_FRAMES_NUM:]) > 0 or np.sum(speech_array[:CHECK_FRAMES_NUM]) > 0
 
 
-MAX_ALLOWED_CORRECTION_SEC = 0.8
-CORRECTION_WINDOW_SEC = SPEECH_FRAME_SEC*10 # needs to be multiple of whats used in VAD
+MAX_ALLOWED_CORRECTION_SEC = 0.3
+CORRECTION_WINDOW_SEC = SPEECH_FRAME_SEC*5 # needs to be multiple of whats used in VAD
 def try_correct_cut(wave, start, end):
     if not starts_or_ends_during_speech(wave, start, end):
         return start, end
@@ -202,6 +204,7 @@ def try_correct_cut(wave, start, end):
     #print_speech_int_array(get_speech_int_array(wave, start-MAX_ALLOWED_CORRECTION_SEC, end+MAX_ALLOWED_CORRECTION_SEC))
 
     corrected_start = start   
+    corrected_end = end
 
     need_start_correction = starts_with_speech(wave, start, end)
 
@@ -221,13 +224,13 @@ def try_correct_cut(wave, start, end):
                 corrected_start -= CORRECTION_WINDOW_SEC
                 need_start_correction = starts_with_speech(wave, corrected_start, end)
 
-    if not  need_start_correction:
-        print 'SUCCESS corrected start: %f-%f -> %f-%f' % (start, end, corrected_start, corrected_end)        
+    if need_start_correction:
+        return None
 
 
 
     need_end_correction = ends_with_speech(wave, start, end)
-    corrected_end = end
+    
 
     if need_end_correction:
         #print("correct end")
@@ -247,7 +250,10 @@ def try_correct_cut(wave, start, end):
         #print 'FAILED to corrected_end'
         return None
 
-    print 'SUCCESS corrected end: %f-%f -> %f-%f' % (start, end, corrected_start, corrected_end)
+    if corrected_start > corrected_end:
+        return None
+
+    #print 'SUCCESS corrected: %f-%f -> %f-%f' % (start, end, corrected_start, corrected_end)
 
     return (corrected_start, corrected_end)
 

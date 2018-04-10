@@ -12,6 +12,7 @@ from echo_msk_commertial_cutter import cut_commertials
 
 
 from utils import audio
+from utils import csv_utils
 
 from tqdm import tqdm # progressbar
 import pandas
@@ -19,7 +20,7 @@ from multiprocessing.pool import ThreadPool
 
 import wave
 
-NUM_THREADS_PROCESSING = 1
+NUM_THREADS_PROCESSING = 4
 
 curr_dir_path = os.path.dirname(os.path.realpath(__file__))
 data_path = os.path.join(curr_dir_path, "data/personalno/")
@@ -109,7 +110,40 @@ def create_force_align_map(audio_path, text_lines, output_map_path):
         return False
     return True
 
-def cut_according_to_map(wave_obj, map_path, output_dir_path):
+def is_bad_piece(wav_path, transcript):
+    SAMPLE_RATE = 16000
+    MAX_SECS = 10
+    MIN_SECS = 1
+
+    frames = int(subprocess.check_output(['soxi', '-s', wav_path], stderr=subprocess.STDOUT))
+    
+
+    if int(frames/SAMPLE_RATE*1000/10/2) < len(transcript):
+        # Excluding samples that are too short to fit the transcript
+        return True
+    elif frames/SAMPLE_RATE > MAX_SECS:
+        # Excluding very long samples to keep a reasonable batch-size
+        return True
+    elif frames/SAMPLE_RATE < MIN_SECS:
+        # Excluding too small
+        return True
+
+
+
+def is_bad_transcript(subs_text):
+    bad = False
+
+    if subs_text.strip() == "":
+        bad = True
+
+    if len(re.findall(r'[0-9]+', subs_text)) > 0:
+        bad = True
+    if len(re.findall(r'[A-Za-z]+', subs_text)) > 0:
+        bad = True
+
+    return bad
+
+def cut_according_to_map(wave_obj, map_path, output_dir_path, show_id):
     if not os.path.exists(output_dir_path):
         os.makedirs(output_dir_path)
 
@@ -132,52 +166,52 @@ def cut_according_to_map(wave_obj, map_path, output_dir_path):
         # if not (type(transcript) is str):
         #     return None
 
-        # transcript = transcript.decode('utf-8').replace("\n", " ").replace(' ', ' ')
-        #print transcript.strip().lower()
-        # transcript = re.sub(u'[^а-яё ]', '', transcript.strip().lower()).strip()
+        if is_bad_transcript(transcript):
+            return None       
+
+        transcript = transcript.decode('utf-8').replace("\n", " ").replace(' ', ' ')        
+        transcript = transcript.strip().lower()
+        transcript = re.sub(u'[^а-яё ]', '', transcript).strip()
         #print transcript
-
-
-        # if is_bad_subs(transcript):
-        #     return None
-
-        #stats_good_subs_count += 1
-        audio_piece_path = os.path.join(output_dir_path, str(part_id) + ".wav")        
-
-       
-
+        
+        audio_piece_path = os.path.join(output_dir_path, show_id +"-"+ str(part_id) + ".wav")        
             
         if not os.path.exists(audio_piece_path):
-             # try correct
-            #corr = audio.try_correct_cut(wave_obj, start, end)
-            #if corr:
-            #    start, end = corr
-            #audio.cut_audio_piece_to_wav(audio_path, audio_piece_path, start, end)
+            # try correct
+            corr = audio.try_correct_cut(wave_obj, start, end)
+            if corr:
+                start, end = corr
+                print "CORRECTED %s" % audio_piece_path            
+
+            # HEURISTIC for this type of show: small fragmets usually contain speech overlapped or wrong words
+            MIN_LENGTH = 2
+            if end-start < MIN_LENGTH:
+                return None
 
             audio.cut_wave(wave_obj, audio_piece_path, int(start*1000), int(end*1000))
 
-        
+        if is_bad_piece(audio_piece_path, transcript):
+            if os.path.exists(audio_piece_path):
+                os.remove(audio_piece_path)
+            return None
 
 
 
-            # if is_bad_piece(audio_piece_path, transcript):
-            #     if os.path.exists(audio_piece_path):
-            #         os.remove(audio_piece_path)
-            #     return None
+        file_size = os.path.getsize(audio_piece_path)
 
-        #stats_good_piece_count += 1
-
-        #file_size = os.path.getsize(audio_piece_path)
-
-       # row = [audio_piece_path, str(file_size), transcript]
+        row = [audio_piece_path, str(file_size), transcript]
 
         return row
 
     pool = ThreadPool(NUM_THREADS_PROCESSING)
     pieces_rows = pool.map(cutter_thread_method, enumerate(m))
+    #for em in enumerate(m):
+    #    cutter_thread_method(em)
 
     
-    #pieces_rows = [x for x in pieces_rows if x != None]
+    pieces_rows = [x for x in pieces_rows if x != None]
+
+    return pieces_rows
 
 
 def parse_item(url):
@@ -229,16 +263,24 @@ def parse_item(url):
 
     print("Map created: %s" % map_path)
 
+       
+    
     
 
+    # select good piecese
+
     # CUT
+
+
 
     # load wave
     wave_obj = wave.open(audio_path_no_ads_wav, 'r')
 
     pieces_dir_path = os.path.join(item_data_folder_path, "pieces/")
-    cut_according_to_map(wave_obj, map_path, pieces_dir_path)
+    piecese_rows = cut_according_to_map(wave_obj, map_path, pieces_dir_path, show_id=item_name)
 
+    csv_path = os.path.join(item_data_folder_path, "pieces.csv")
+    csv_utils.write_rows_to_csv(csv_path, piecese_rows)
 
   
     
@@ -247,4 +289,4 @@ def parse_item(url):
 
 
 
-parse_item("https://echo.msk.ru/programs/personalno/1825902-echo/")
+parse_item("https://echo.msk.ru/programs/personalno/2143194-echo/")
