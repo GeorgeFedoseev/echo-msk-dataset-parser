@@ -11,11 +11,8 @@ import csv_utils
 
 def show_global_stats():
 
-
-    curr_dir_path = os.getcwd()
-
-    
-    videos_data_dir = os.path.join(curr_dir_path, "data/")
+    curr_dir_path = os.getcwd()    
+    videos_data_dir = os.path.join(curr_dir_path, "data/personalno/")
 
 
     stats_total_duration = 0.0

@@ -87,7 +87,7 @@ def sync_csv_to_file(csv_path):
     #print lines
 
 
-    print 'write to %s' % csv_path
+    #print 'write to %s' % csv_path
     f = open(csv_path, "w")
     f.write('\n'.join(lines)+'\n')
     f.close()
@@ -126,9 +126,9 @@ def csv_queue_worker():
             # check if main thread is still alive
             is_main_thread_active = lambda : any((i.name == "MainThread") and i.is_alive() for i in threading.enumerate())
             #print("is_main_thread_active: %s" % str(is_main_thread_active()))
-                
+
             if not is_main_thread_active():
-                print ("main thread is not alive - exit")
+                #print ("main thread is not alive - exit")
                 sys.exit()
 
 

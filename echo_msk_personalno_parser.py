@@ -227,7 +227,7 @@ def cut_according_to_map(wave_obj, map_path, output_dir_path, show_id):
 def write_stats(data_folder, stats_header, stats):
     stats_path = os.path.join(data_folder, "stats.csv")
 
-    print stats
+   # print stats
     csv_utils.write_rows_to_csv(stats_path, [stats_header, stats])
     #csv_writer.writerow(stats_header)
     #csv_writer.writerow(stats)
@@ -284,15 +284,7 @@ def parse_item(url):
 
     print("Map created: %s" % map_path)
 
-       
-    
-    
-
-    # select good piecese
-
     # CUT
-
-
     # load wave
     wave_obj = wave.open(audio_path_no_ads_wav, 'r')
 
