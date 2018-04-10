@@ -20,7 +20,7 @@ from multiprocessing.pool import ThreadPool
 
 import wave
 
-NUM_THREADS_PROCESSING = 4
+NUM_THREADS_PROCESSING = 1
 
 curr_dir_path = os.path.dirname(os.path.realpath(__file__))
 data_path = os.path.join(curr_dir_path, "data/personalno/")
@@ -289,4 +289,4 @@ def parse_item(url):
 
 
 
-parse_item("https://echo.msk.ru/programs/personalno/2143194-echo/")
+parse_item("https://echo.msk.ru/programs/personalno/2142586-echo/")
