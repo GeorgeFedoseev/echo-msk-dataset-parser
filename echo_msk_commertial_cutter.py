@@ -113,7 +113,7 @@ def get_regions_to_cut(wav_path):
 
 
 
-def cut_ads(input_file_path, output_file_path):  
+def cut_commertials(input_file_path, output_file_path):  
 
     print 'Processing %s' % input_file_path  
     regions_to_merge = get_regions_to_save(input_file_path)
@@ -146,4 +146,4 @@ if __name__ == "__main__":
     WAV_FILE = 'data/test3.wav'
     NOT_ADS_FILE = 'data/no_ads.wav'
     #get_regions_to_cut(WAV_FILE)
-    cut_ads(WAV_FILE, NOT_ADS_FILE)
+    cut_commertials(WAV_FILE, NOT_ADS_FILE)

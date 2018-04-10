@@ -8,6 +8,8 @@ import subprocess
 
 from echo_msk_personalno_webpage_parser import parse_page 
 
+from echo_msk_commertial_cutter import cut_commertials
+
 
 from utils import audio
 
@@ -41,7 +43,7 @@ def download_audio(url, audio_path):
 
 def sample_text_dots(text): #разбивает текст на части по знакам препинания
     data = []
-    pattern = re.compile("(?<!\d)[,.!?()]|[,.!?()](?!\d)")
+    pattern = re.compile("(?<!\d)[.!?()]|[.!?()](?!\d)")
     for line in text:
         s = [x for x in pattern.split(line) if x]
         for element in s:
@@ -107,17 +109,12 @@ def create_force_align_map(audio_path, text_lines, output_map_path):
         return False
     return True
 
-def cut_according_to_map(wave_obj, audio_path, map_path, output_dir_path):
+def cut_according_to_map(wave_obj, map_path, output_dir_path):
     if not os.path.exists(output_dir_path):
         os.makedirs(output_dir_path)
 
     m = pandas.read_table(map_path, sep=' ', quotechar='"').as_matrix()
 
-    # audio_path_wav = os.path.join(audio_folder_path, "%i.wav" % file_id)
-    # if not os.path.exists(audio_path_wav):
-    #     convert_to_wav(audio_path_mp3, audio_path_wav)
-
-    #pbar = tqdm(total=len(m))
     def cutter_thread_method(d):
         i, row = d        
 
@@ -211,6 +208,9 @@ def parse_item(url):
         audio.convert_to_wav(audio_path, audio_path_wav)        
 
     # CUT COMMERTIALS
+    audio_path_no_ads_wav = os.path.join(item_data_folder_path, item_name+"-audio-no-ads.wav")
+    if not os.path.exists(audio_path_no_ads_wav):
+        cut_commertials(audio_path_wav, audio_path_no_ads_wav)            
 
 
     # FORCE ALIGNMENT
@@ -218,49 +218,29 @@ def parse_item(url):
     text_lines_coeff = sample_text_coef(text_lines, min_len=8)
     text_lines_punct = sample_text_dots(text_lines)
 
-    for l in text_lines_punct:
-        print l
+    # for l in text_lines_punct:
+    #     print l
 
     print("Creating map...")
     # map text to speech
     map_path = os.path.join(item_data_folder_path, item_name+("-fa_map.txt"))
     if not os.path.exists(map_path):
-        create_force_align_map(audio_path_wav, text_lines_coeff, map_path)
+        create_force_align_map(audio_path_no_ads_wav, text_lines_punct, map_path)
 
     print("Map created: %s" % map_path)
 
+    
+
+    # CUT
+
     # load wave
-    wave_obj = wave.open(audio_path_wav, 'r')
+    wave_obj = wave.open(audio_path_no_ads_wav, 'r')
 
-    # cut
     pieces_dir_path = os.path.join(item_data_folder_path, "pieces/")
-    cut_according_to_map(wave_obj, audio_path_wav, map_path, pieces_dir_path)
+    cut_according_to_map(wave_obj, map_path, pieces_dir_path)
 
 
-    # cut first intro if exists
-    # audio_path_next = os.path.join(item_data_folder_path, item_name+("-audio_%i.mp3" % process_step))
-    # audio_fingerprint_finder.cut_ads(audio_path_prev, audio_path_next, before_seconds=60)
-
-
-    # while 1:
-    #     ad_line_index = get_ad_line_index(text_lines)
-    #     if ad_line_index == -1:
-    #         break
-
-    #     print('ad_line_index: %i' % ad_line_index)
-
-    #     #text_lines_before_ad = text_lines[:ad_line_index]
-
-    #     # create map before ad
-    #     output_map_path = os.path.join(item_data_folder_path, item_name+("-fa_map_%i.txt" % process_step))
-    #     create_force_align_map(audio_path_next, text_lines, output_map_path)
-
-    #     return
-
-        
-    #     del text_lines[ad_line_index]
-
-    #     process_step += 1
+  
     
     print('done')
     
