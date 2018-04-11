@@ -150,7 +150,7 @@ def intervals_to_bool_arr(intervals):
 
 if __name__ == "__main__":   
 
-    WAV_FILE = 'data/test2.wav'
+    WAV_FILE = 'data/test.wav'
 
     speech_energy = get_speech_energy_arr(WAV_FILE)
     speech_energy_ma = movingaverage(speech_energy, N=30)
