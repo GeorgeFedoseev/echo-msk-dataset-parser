@@ -10,6 +10,15 @@ import re
 reload(sys)
 sys.setdefaultencoding("utf-8")
 
+import os
+
+import const
+
+WEBPAGE_CACHE_DIR = os.path.join(const.TMP_DIR_PATH, "webpages_cache/")
+if not os.path.exists(WEBPAGE_CACHE_DIR):
+    os.makedirs(WEBPAGE_CACHE_DIR)
+
+
 
 def get_content_soup(soup):
     return soup.find("div", "typical dialog _ga1_on_ contextualizable include-relap-widget")
@@ -80,19 +89,16 @@ def extract_text(soup):
             if txt != 'РЕКЛАМА':
                 raise Exception("'РЕКЛАМА' in txt and txt != 'РЕКЛАМА'")
 
-        if 'НОВОСТИ' in txt:
+        elif 'НОВОСТИ' in txt:
             cut_points += 1
 
             if txt != 'НОВОСТИ':
                 raise Exception("'НОВОСТИ' in txt and txt != 'НОВОСТИ'")
-
-        #print txt
-
-        text_lines.append(txt)
+        else:
+            text_lines.append(txt)
 
     return text_lines, cut_points
 
-            
     
 
 
@@ -100,11 +106,30 @@ def extract_audio_url(soup):
     href = soup.find("a", "load iblock", href=re.compile("^https://cdn.echo.msk.ru/snd/"))["href"]    
     return href
 
+def get_cached_webpage_text(url):
+    filename = url.replace(':', '_').replace('/', '_')+".txt"
+    cached_file_path = os.path.join(WEBPAGE_CACHE_DIR, filename)
+
+    txt = ''
+
+    if os.path.exists(cached_file_path):        
+        f = open(cached_file_path, 'r')
+        txt = f.read()
+        f.close()
+    else:
+        r = requests.get(url)
+        txt = r.text
+        f = open(cached_file_path, 'w')
+        f.write(txt)
+        f.close()
+
+    return txt
+
 def parse_page(url):
     print 'parsing page %s' % url
 
-    r = requests.get(url)
-    soup = bs(r.text, 'html.parser')
+    txt = get_cached_webpage_text(url)
+    soup = bs(txt, 'html.parser')
 
     res = extract_text(soup)
     if res:

@@ -142,6 +142,9 @@ def write_wave_array_to_wav(output_path, ):
     outfile.close()
 
 
+# SILENCE CUTTER
+
+
 # CUT CORRECTION
 
 SPEECH_FRAME_SEC = 0.02
