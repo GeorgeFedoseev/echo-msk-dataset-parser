@@ -53,6 +53,8 @@ def parse():
     NUM_THREADS = 3
     pool = ThreadPool(NUM_THREADS)
     pool.map(prepare_url_data, urls)
+    #for url in urls:
+    #    prepare_url_data(url)
 
     
 

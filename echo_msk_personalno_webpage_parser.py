@@ -137,7 +137,13 @@ def parse_page(url):
 
         print('text_lines: %i' % len(text_lines))
         print('cut_points: %i' % cut_points)
-        audio_url = extract_audio_url(soup)
+        
+        try:
+            audio_url = extract_audio_url(soup)
+        except Exception as ex:
+            print 'failed to get audio url: %s' % str(ex)
+            return None
+
         print('audio_url: %s' % audio_url)
 
         return audio_url, text_lines, cut_points
