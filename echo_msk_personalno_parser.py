@@ -161,13 +161,14 @@ def cut_according_to_map(wave_obj, map_path, output_dir_path, show_id):
         if start >= end:
             return None
 
-        transcript = row[3]
+        transcript = str(row[3])
 
         # if not (type(transcript) is str):
         #     return None
 
         if is_bad_transcript(transcript):
             return None       
+
 
         transcript = transcript.decode('utf-8').replace("\n", " ").replace(' ', ' ')        
         transcript = transcript.strip().lower()

@@ -101,7 +101,18 @@ def get_regions_to_cut(wav_path):
             if intro_r[0] < start:
                 start = intro_r[0]
 
-        regions_to_cut.append((start, end, 'commertial'))
+            regions_to_cut.append((start, end, 'commertial'))
+        else:
+            # didnt find intro finishing commertial
+            # accept it only if its in the end
+            # and cut till the end
+            total_duration = audio.get_audio_length(wav_path)
+            if abs(end - total_duration) < 20:
+                end = total_duration
+
+            regions_to_cut.append((start, end, 'commertial'))
+
+        
 
         print "======="
 
