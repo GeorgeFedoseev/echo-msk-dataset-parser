@@ -88,6 +88,7 @@ def get_regions_to_cut(wav_path):
     print "---------"
     regions_to_cut = []
 
+    used_intermittent_regions = []
     for ir in intrmttnt_regions:
         print "for region %s" % region_str(ir)
         # find close to end intro
@@ -100,6 +101,8 @@ def get_regions_to_cut(wav_path):
             end = intro_r[1]
             if intro_r[0] < start:
                 start = intro_r[0]
+
+            used_intermittent_regions.append(intro_r)
 
             regions_to_cut.append((start, end, 'commertial'))
         else:
@@ -114,6 +117,10 @@ def get_regions_to_cut(wav_path):
         
 
         print "======="
+
+    # also add unused intermittent regions to cut just intro
+    not_used_intermittent_regions = [r for r in intrmttnt_regions if not any([x[0] == r[0] for x in used_intermittent_regions])]
+    regions_to_cut.extend(not_used_intermittent_regions)
 
     print "commertial regions: "
     print_regions(regions_to_cut)
