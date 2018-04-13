@@ -86,14 +86,14 @@ def extract_text(soup):
         if 'РЕКЛАМА' in txt:
             cut_points += 1
 
-            if txt != 'РЕКЛАМА':
-                raise Exception("'РЕКЛАМА' in txt and txt != 'РЕКЛАМА'")
+            #if txt.strip() != 'РЕКЛАМА':
+             #   raise Exception("'РЕКЛАМА' in txt and txt != 'РЕКЛАМА'")
 
         elif 'НОВОСТИ' in txt:
             cut_points += 1
 
-            if txt != 'НОВОСТИ':
-                raise Exception("'НОВОСТИ' in txt and txt != 'НОВОСТИ'")
+            #if txt.strip() != 'НОВОСТИ':
+            #    raise Exception("'НОВОСТИ' in txt and txt != 'НОВОСТИ'")
         else:
             text_lines.append(txt)
 

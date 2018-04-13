@@ -307,5 +307,5 @@ def parse_item(url):
     
 
 
-
-parse_item("https://echo.msk.ru/programs/personalno/2142586-echo/")
+if __name__ == "__main__":
+    parse_item("https://echo.msk.ru/programs/personalno/2142586-echo/")

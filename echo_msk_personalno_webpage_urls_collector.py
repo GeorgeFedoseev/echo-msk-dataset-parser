@@ -67,7 +67,7 @@ def find_all_urls():
 
     print("total added %i urls" % len(all_urls))
 
-    return all_urls
+    return csv_utils.get_column_csv(URLS_CSV, 0)
 
 if __name__ == "__main__":
     find_all_urls()
