@@ -84,8 +84,8 @@ def parse():
         parse.pbar.update(1)
 
     parse.pbar = tqdm(total=len(good_urls))
-    NUM_THREADS = 4
-    pool = ThreadPool(NUM_THREADS)
+    #NUM_THREADS = 4
+    #pool = ThreadPool(NUM_THREADS)
     #pool.map(process_url, good_urls)
     for url in good_urls:
         process_url(url)
