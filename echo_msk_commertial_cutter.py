@@ -109,8 +109,7 @@ def get_regions_to_cut(wav_path):
             total_duration = audio.get_audio_length(wav_path)
             if abs(end - total_duration) < 20:
                 end = total_duration
-
-            regions_to_cut.append((start, end, 'commertial'))
+                regions_to_cut.append((start, end, 'commertial'))
 
         
 
