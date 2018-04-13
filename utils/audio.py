@@ -147,11 +147,11 @@ def write_wave_array_to_wav(output_path, ):
 
 # CUT CORRECTION
 
-SPEECH_FRAME_SEC = 0.02
-CHECK_FRAMES_NUM = 3
+SPEECH_FRAME_SEC = 0.01
+CHECK_FRAMES_NUM = 6
 
 def get_speech_int_array(wave, start, end):
-    vad = webrtcvad.Vad(2)
+    vad = webrtcvad.Vad(3)
 
     start = max(0, start)
 
@@ -175,8 +175,8 @@ def get_speech_int_array(wave, start, end):
     while wave.tell() < min(end*samples_per_second, total_samples):
         #wave_view_str += "1" if vad.is_speech(wave.readframes(samples_to_get), sample_rate) else "0"
         try:
-            wave_view_int.append(1 if vad.is_speech(wave.readframes(samples_per_frame), samples_per_second) else 0)       
-            wave.setpos(wave.tell() + samples_per_frame)   
+            wav_samples = wave.readframes(samples_per_frame)
+            wave_view_int.append(1 if vad.is_speech(wav_samples, samples_per_second) else 0)            
         except Exception as ex:
             print("Exception: "+str(ex))
             return []
