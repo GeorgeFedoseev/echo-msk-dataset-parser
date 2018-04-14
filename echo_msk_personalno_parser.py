@@ -235,6 +235,16 @@ def write_stats(data_folder, stats_header, stats):
     
 
 def parse_item(url):
+
+    item_name = get_item_name_from_url(url)
+    item_data_folder_path = get_item_data_folder(url)
+
+    stats_path = os.path.join(item_data_folder_path, "stats.csv")
+
+    if os.path.exists(stats_path):
+        # already parsed
+        return True
+
     res = parse_page(url)
 
     if not res:
@@ -243,9 +253,6 @@ def parse_item(url):
 
     audio_url, text_lines, cut_points_count = res
 
-
-    item_name = get_item_name_from_url(url)
-    item_data_folder_path = get_item_data_folder(url)
     if not os.path.exists(item_data_folder_path):
         os.makedirs(item_data_folder_path)
 
@@ -305,6 +312,8 @@ def parse_item(url):
                 total_speech_duration, len(pieces_rows), len(map_text_lines)])
     
     print('done')
+
+    return True
     
 
 
