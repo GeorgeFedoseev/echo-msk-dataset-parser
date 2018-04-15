@@ -119,7 +119,7 @@ def export(target_folder, apply_filter=True, skip_audio=False, minimum_words_cou
         parts = [p[:3] for p in parts]
 
         # filter items
-        parts = [p for p in parts if is_item_good(wav_filesize=int(p[1]), transcript=p[2])]
+        parts = [p for p in parts if is_item_good(wav_filesize=int(p[1]), transcript=p[2], min_transcript_words=minimum_words_count)]
         
 
         all_rows.extend(parts)
