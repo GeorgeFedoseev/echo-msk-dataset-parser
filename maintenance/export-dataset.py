@@ -58,17 +58,21 @@ def export(target_folder, apply_filter=True, skip_audio=False, minimum_words_cou
     export_vocabulary_txt_path = os.path.join(target_folder, DATASET_NAME+"-vocabulary.txt")
 
     # make folders for audio
-    export_train_dir_path = os.path.join(target_folder, DATASET_NAME+"-train")
-    if not os.path.exists(export_train_dir_path):
-        os.makedirs(export_train_dir_path)
+    export_audio_dir_path = os.path.join(target_folder, DATASET_NAME+"-audio")
+    if not os.path.exists(export_audio_dir_path):
+        os.makedirs(export_audio_dir_path)
 
-    export_dev_dir_path = os.path.join(target_folder, DATASET_NAME+"-dev")
-    if not os.path.exists(export_dev_dir_path):
-        os.makedirs(export_dev_dir_path)
+    # export_train_dir_path = os.path.join(target_folder, DATASET_NAME+"-train")
+    # if not os.path.exists(export_train_dir_path):
+    #     os.makedirs(export_train_dir_path)
 
-    export_test_dir_path = os.path.join(target_folder, DATASET_NAME+"-test")
-    if not os.path.exists(export_test_dir_path):
-        os.makedirs(export_test_dir_path)
+    # export_dev_dir_path = os.path.join(target_folder, DATASET_NAME+"-dev")
+    # if not os.path.exists(export_dev_dir_path):
+    #     os.makedirs(export_dev_dir_path)
+
+    # export_test_dir_path = os.path.join(target_folder, DATASET_NAME+"-test")
+    # if not os.path.exists(export_test_dir_path):
+    #     os.makedirs(export_test_dir_path)
 
 
     all_rows = []
@@ -147,7 +151,7 @@ def export(target_folder, apply_filter=True, skip_audio=False, minimum_words_cou
         old_path = get_audio_rel_path(row[0])
         #print old_path
         filename = os.path.basename(old_path)
-        new_path =  os.path.join(export_train_dir_path, filename)       
+        new_path =  os.path.join(export_audio_dir_path, filename)       
         copy_jobs.append((old_path, new_path))
 
         row[0] = new_path
@@ -156,18 +160,18 @@ def export(target_folder, apply_filter=True, skip_audio=False, minimum_words_cou
     for row in dev_rows:
         old_path = get_audio_rel_path(row[0])
         filename = os.path.basename(old_path)
-        new_path =  os.path.join(export_dev_dir_path, filename)       
+        new_path =  os.path.join(export_audio_dir_path, filename)       
         copy_jobs.append((old_path, new_path))
 
-        row[0] =  os.path.join(export_dev_dir_path, filename)        
+        row[0] =  new_path      
 
     for row in test_rows:
         old_path = get_audio_rel_path(row[0])
         filename = os.path.basename(old_path)
-        new_path =  os.path.join(export_test_dir_path, filename)       
+        new_path =  os.path.join(export_audio_dir_path, filename)       
         copy_jobs.append((old_path, new_path))
 
-        row[0] =  os.path.join(export_test_dir_path, filename)        
+        row[0] =  new_path      
 
 
     # write sets csvs
