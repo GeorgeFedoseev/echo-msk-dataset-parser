@@ -34,6 +34,23 @@ def check_dependencies_installed():
 
     return True
 
+
+def is_item_good(wav_filesize, transcript, min_audio_length=3, max_audio_length=20, min_transcript_words=2):    
+    audio_duration = wav_filesize/32000
+    if audio_duration < min_audio_length:
+        return False
+    if audio_duration > max_audio_length:
+        return False
+    # check ctc
+    if not (wav_filesize/len(transcript)>1400):
+        return False
+
+    if len(transcript.split()) < min_transcript_words:
+        return False
+
+    return True
+    
+
 def export(target_folder, apply_filter=True, skip_audio=False, minimum_words_count=1):
 
     target_folder = os.path.abspath(os.path.expanduser(target_folder))
@@ -101,8 +118,9 @@ def export(target_folder, apply_filter=True, skip_audio=False, minimum_words_cou
         # remove extra columns 
         parts = [p[:3] for p in parts]
 
-        # filter transcripts less than 5 words
-        parts = [p for p in parts if len(str(p[2]).split()) >= minimum_words_count]
+        # filter items
+        parts = [p for p in parts if is_item_good(wav_filesize=p[1], transcript=p[2])]
+        
 
         all_rows.extend(parts)
 
