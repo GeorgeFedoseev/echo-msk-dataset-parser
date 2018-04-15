@@ -21,7 +21,7 @@ from utils import audio as audio_utils
 
 import subprocess
 
-NUM_THREADS = 1
+NUM_THREADS = 56
 DATASET_NAME = "echo-msk"
 
 def check_dependencies_installed():
