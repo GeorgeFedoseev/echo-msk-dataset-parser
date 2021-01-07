@@ -16,7 +16,7 @@ joblib==0.11
 kiwisolver==1.0.1
 librosa==0.6.0
 llvmlite==0.22.0
-lxml==4.2.1
+lxml==4.6.2
 matplotlib==2.2.2
 numba==0.37.0
 pandas==0.22.0
